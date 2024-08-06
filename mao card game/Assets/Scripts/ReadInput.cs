@@ -21,7 +21,7 @@ public class ReadInput : MonoBehaviour
 
     public void OnStartButtonClicked()
     {
-        GameObject.Find("Board").GetComponent<ArrangeAroundBoard>().setPlayerCount(GameObject.Find("NetworkManagerUI").GetComponent<NetworkManagerUI>().playerCount);
+        //GameObject.Find("Board").GetComponent<ArrangeAroundBoard>().setPlayerCount(GameObject.Find("NetworkManagerUI").GetComponent<NetworkManagerUI>().playerCount);
         GameObject.Find("Board").GetComponent<ArrangeAroundBoard>().Arrange();
         GameObject.Find("Board").GetComponent<ArrangeAroundBoard>().Deal();
     }
