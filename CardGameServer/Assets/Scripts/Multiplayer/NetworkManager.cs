@@ -4,6 +4,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ServerToClientMessage : ushort
+{
+
+    ApproveLogin,
+}
+public enum ClientToServerMessage : ushort
+{
+
+    RequestLogin,
+}
+
 public class NetworkManager : Singleton<NetworkManager>
 {
     protected override void Awake()
