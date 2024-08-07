@@ -15,6 +15,6 @@ public class UIManager : Singleton<UIManager>
         }
         InputComponent input = (InputComponent)component;
         string username = input.inp.text;
-        NetworkManager.Instance.Connect(username);
+        NetworkEvents.OnConnectRequest(username);
     }
 }
