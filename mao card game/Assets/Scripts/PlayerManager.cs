@@ -1,12 +1,19 @@
 using Riptide;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Netcode;
+using Unity.Networking.Transport;
 using UnityEngine;
 
-public class PlayerManager : Singleton<PlayerManager>
+public class PlayerManager : MonoBehaviour
 {
+    /*
+    [SerializeField] private NetworkData networkSettings;
     [SerializeField] private GameObject playerPrefab;
     private static Dictionary<ushort,  Player> players = new Dictionary<ushort, Player>();
+    public static ushort LocalId = ushort.MaxValue;
     public static Player GetPlayer(ushort id)
     {
         players.TryGetValue(id, out Player player);
@@ -23,17 +30,37 @@ public class PlayerManager : Singleton<PlayerManager>
         return false;
     }
 
-    public static Player LocalPlayer { get { return GetPlayer(NetworkManager.Instance.client.Id); } }
+    private void Awake()
+    {
+        Subscribe();
+    }
+
+    private void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    public Player LocalPlayer { get { return GetPlayer(networkSettings.localId); } }
     public bool IsLocalPlayer(ushort id)
     {
         return id == LocalPlayer.Id;
     }
 
-    public void SpawnInitialPlayer(string username)
+    private void Subscribe()
+    {
+        NetworkEvents.ConnectSuccess += SpawnInitialPlayer;
+    }
+
+    private void Unsubscribe()
+    {
+        NetworkEvents.ConnectSuccess -= SpawnInitialPlayer;
+    }
+
+    public void SpawnInitialPlayer(ushort id, string username)
     {
         Player player = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity).GetComponent<Player>();
         player.name = $"{username} -- LOCAL PLAYER WAITING FOR SERVER";
-        ushort id = NetworkManager.Instance.client.Id;
+        LocalId = id;
         player.Init(id, username, true);
         players.Add(id, player);
         player.RequestInit();
@@ -41,7 +68,8 @@ public class PlayerManager : Singleton<PlayerManager>
 
     private static void InitializeLocalPlayer()
     {
-        LocalPlayer.name = $"{LocalPlayer.Username} -- {LocalPlayer.Id} -- LOCAL";
+        Player local = players[LocalId];
+        local.name = $"{local.Username} -- {local.Id} -- LOCAL";
     }
 
     #region Messages
@@ -56,5 +84,5 @@ public class PlayerManager : Singleton<PlayerManager>
         }
     }
     
-    #endregion
+    #endregion*/
 }

@@ -1,66 +1,64 @@
 using Riptide;
 using Riptide.Utils;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.Tutorials.Core.Editor;
 using UnityEngine;
+using UnityEngine.Windows;
 
-public enum ServerToClientMessage : ushort { 
+public enum ServerToClientId : ushort { 
 
-    ApproveLogin,
+    playerSpawned = 1,
+    playerMovement,
+    spawnDeck,
+    waitingRoom
 }
-public enum ClientToServerMessage : ushort { 
+public enum ClientToServerId : ushort { 
 
-    RequestLogin, 
+    name = 1,
+    input,
+    startGame,
 }
 
 public class NetworkManager : MonoBehaviour
 {
-    protected void Awake()
+
+    private static NetworkManager singleton;
+
+    public static NetworkManager Singleton
     {
-        RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, true);
+
+        get => singleton;
+        private set
+        {
+            if (singleton == null)
+                singleton = value;
+            else if (singleton != value)
+            {
+                Debug.Log($"{nameof(NetworkManager)} instnace already exists");
+                Destroy(value);
+            }
+
+        }
 
     }
 
-    private static string localUsername;
-    [SerializeField] private NetworkData networkSettings;
-    public Client client;
+    public Client client { get; private set; }
+
+    [SerializeField] private string ip;
+    [SerializeField] private string port;
+
+    private void Awake()
+    {
+        Singleton = this;
+    }
 
     private void Start()
     {
-        client  = new Client();
-        client.Connected += OnClientConnected;
-        Subscription();
-    }
-
-    private void Subscription()
-    {
-        NetworkEvents.ConnectRequest += Connect;
-        NetworkEvents.SendMessage += OnSendMessage;
-    }
-
-    private void UnSubscription()
-    {
-        NetworkEvents.ConnectRequest -= Connect;
-    }
-
-    private void OnClientConnected(object sender, EventArgs e)
-    {
-        NetworkEvents.OnConnectSuccess(client.Id, networkSettings.localUsername);
-        networkSettings.localId = client.Id;
-        PlayerManager.Instance.SpawnInitialPlayer(localUsername);
-    }
-
-    private void OnSendMessage(Message message)
-    {
-        client.Send(message);
-    }
-
-    public void Connect(string username)
-    {
-        networkSettings.localUsername = string.IsNullOrEmpty(username) ? "Guest": username;
-        client.Connect($"{networkSettings.Ip}:{networkSettings.Port}");
+        RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
+        client = new Client();
+        client.Connected += DidConenct;
+        client.ConnectionFailed += FailedToConnect;
+        client.ClientDisconnected += PlayerLeft;
+        client.Disconnected += DidDisconnect;
     }
 
     private void FixedUpdate()
@@ -68,9 +66,34 @@ public class NetworkManager : MonoBehaviour
         client.Update();
     }
 
-    protected void OnDestroy()
+    private void OnApplicationQuit()
     {
-        client.Connected -= OnClientConnected;
-        UnSubscription();
+        client.Disconnect();
+    }
+
+    public void Connect()
+    {
+        Debug.Log("husfwse");
+        client.Connect($"{ip}:{port}");
+    }
+
+    private void DidConenct(object sender, EventArgs e)
+    {
+        UIManager.Singleton.SendName();
+    }
+
+    private void FailedToConnect(object sender, EventArgs e)
+    {
+        UIManager.Singleton.Disconnect();
+    }
+
+    private void DidDisconnect(object sender, EventArgs e)
+    {
+        UIManager.Singleton.Disconnect();
+    }
+
+    private void PlayerLeft(object sender, ClientDisconnectedEventArgs e)
+    {
+        Destroy(Player.list[e.Id].gameObject);
     }
 }
